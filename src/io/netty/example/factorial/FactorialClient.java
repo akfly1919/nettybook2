@@ -61,6 +61,7 @@ public class FactorialClient {
     }
 
     public static void main(String[] args) throws Exception {
+    	args=new String[]{"127.0.0.1","9999","13"};
         // Print usage if no argument is specified.
         if (args.length != 3) {
             System.err.println(
