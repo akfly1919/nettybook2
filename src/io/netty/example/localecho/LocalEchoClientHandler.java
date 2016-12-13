@@ -23,7 +23,7 @@ public class LocalEchoClientHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, Object msg) throws Exception {
         // Print as received
-        System.out.println(msg);
+        System.out.println("lest"+msg);
     }
 
     @Override

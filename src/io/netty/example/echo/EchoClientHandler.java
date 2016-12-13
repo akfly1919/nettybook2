@@ -50,6 +50,7 @@ public class EchoClientHandler extends ChannelHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+    	logger.info(firstMessage.toString());
         ctx.writeAndFlush(firstMessage);
     }
 

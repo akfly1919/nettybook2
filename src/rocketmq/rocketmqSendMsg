@@ -1,0 +1,52 @@
+@startuml
+title 发消息流程
+==启动流程==
+actor producer
+producer->DefaultMQProducer:start
+activate DefaultMQProducer
+DefaultMQProducer->DefaultMQProducerImpl:start
+activate DefaultMQProducerImpl
+DefaultMQProducerImpl->DefaultMQProducerImpl:checkConfig
+DefaultMQProducerImpl->MQClientManager:getAndCreateMQClientInstance
+DefaultMQProducerImpl<-MQClientManager:返回MQClientInstance
+DefaultMQProducerImpl->MQClientInstance:registerProducer
+note right of MQClientInstance 
+ConcurrentHashMap<String/* group */, MQProducerInner> producerTable 
+ConcurrentHashMap<String/* group */, MQConsumerInner> consumerTable
+ConcurrentHashMap<String/* group */, MQAdminExtInner> adminExtTable
+end note
+DefaultMQProducerImpl<-MQClientInstance:返回registerOk
+DefaultMQProducerImpl->MQClientInstance:start
+activate MQClientInstance
+MQClientInstance->MQClientAPIImpl:Start request-response channel
+MQClientInstance->MQClientInstance:startScheduledTask\n 定数抓取fetchNameServerAddr\n updateTopicRouteInfoFromNameServer\ncleanOfflineBroker sendHeartbeatToAllBrokerWithLock\n矫正adjustThreadPool
+MQClientInstance->PullMessageService:Start pull service(这些取消息的时候再分析)
+MQClientInstance->RebalanceService:Start rebalance service(这些取消息的时候再分析)
+MQClientInstance->DefaultMQProducerImpl:start这里start方法执行了两遍boolean
+DefaultMQProducerImpl->DefaultMQProducer:ok
+DefaultMQProducer->producer:ok
+deactivate MQClientInstance
+deactivate DefaultMQProducerImpl
+deactivate DefaultMQProducer
+==发消息==
+producer->DefaultMQProducer:send
+activate DefaultMQProducer
+DefaultMQProducer->DefaultMQProducerImpl:send
+activate DefaultMQProducerImpl
+DefaultMQProducerImpl->DefaultMQProducerImpl:sendDefaultImpl
+activate DefaultMQProducerImpl #DarkSalmon
+DefaultMQProducerImpl->DefaultMQProducerImpl:makeSureStateOK
+activate DefaultMQProducerImpl #FFFFBB
+DefaultMQProducerImpl->DefaultMQProducerImpl:tryToFindTopicPublishInfo\n查询topic信息，如果没有用默认topic(tbw102)
+activate DefaultMQProducerImpl #FFFFaa
+DefaultMQProducerImpl->DefaultMQProducerImpl:selectOneMessageQueue\n负载选取一个queue
+activate DefaultMQProducerImpl #FFFFcc
+DefaultMQProducerImpl->DefaultMQProducerImpl:sendKernelImpl
+DefaultMQProducerImpl->MQClientInstance:getMQClientAPIImpl
+DefaultMQProducerImpl<-MQClientInstance:返回MQClientAPIImpl
+DefaultMQProducerImpl->MQClientInstance:sendMessage组装RemotingCommand
+MQClientInstance->NettyRemotingClient:invokeOneway/invokeSync/invokeAsync
+deactivate DefaultMQProducerImpl
+deactivate DefaultMQProducerImpl
+deactivate DefaultMQProducerImpl
+@enduml

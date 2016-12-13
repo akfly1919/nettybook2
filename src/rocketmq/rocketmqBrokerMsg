@@ -1,0 +1,26 @@
+@startuml
+title broker端处理消息
+SendMessageProcessor->SendMessageProcessor:processRequest\n等待RequestCode.SEND_MESSAGE的消息
+activate SendMessageProcessor
+SendMessageProcessor->SendMessageProcessor:sendMessage
+SendMessageProcessor->AbstractSendMessageProcessor:msgCheck检查下如果topic没有注册的话\n自动注册
+SendMessageProcessor<-AbstractSendMessageProcessor:void
+SendMessageProcessor->DefaultMessageStore:putMessage
+DefaultMessageStore->CommitLog:putMessage
+CommitLog->MapedFile:appendMessage
+MapedFile->DefaultAppendMessageCallback:doAppend
+MapedFile<-DefaultAppendMessageCallback:写commitlog成功，mappedByteBuffer.put\n返回AppendMessageResult
+MapedFile->CommitLog:return result
+CommitLog->CommitLog:同步刷盘/异步刷盘/双写\nmappedByteBuffer.force()
+CommitLog->DefaultMessageStore:返回PutMessageResult
+SendMessageProcessor<-DefaultMessageStore:返回PutMessageResult
+deactivate SendMessageProcessor
+alt 异步插入consumerqueue和异步构建index
+ReputMessageService->ReputMessageService:doReput
+ReputMessageService->CommitLog:getData
+ReputMessageService<-CommitLog:返回SelectMapedBufferResult\n构造dispatchRequest
+ReputMessageService->DefaultMessageStore:doDispatch
+DefaultMessageStore->ConsumeQueue:putMessagePostionInfoWrapper
+DefaultMessageStore->IndexService:buildIndex
+end
+@enduml

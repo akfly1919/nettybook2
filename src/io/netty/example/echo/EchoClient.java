@@ -71,6 +71,7 @@ public class EchoClient {
     }
 
     public static void main(String[] args) throws Exception {
+    	args=new String[]{"127.0.0.1","8080"};
         // Print usage if no argument is specified.
         if (args.length < 2 || args.length > 3) {
             System.err.println(

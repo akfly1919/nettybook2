@@ -1,0 +1,22 @@
+@startuml
+title broker取消息
+NettyRemotingServer->NettyRemotingServer:channel.read
+NettyRemotingServer->PullMessageProcessor:processRequest
+PullMessageProcessor->TopicConfigManager:selectTopicConfig查询topicConfig
+PullMessageProcessor<-TopicConfigManager:返回topicConfig
+PullMessageProcessor->DefaultMessageStore:getMessage
+DefaultMessageStore->DefaultMessageStore:findConsumeQueue(topic, queueId)\n查询到对应的consumerqueue
+DefaultMessageStore->ConsumeQueue:getIndexBuffer
+DefaultMessageStore<-ConsumeQueue:返回数据bufferConsumeQueue从offset到目前写到的所有数据
+loop bufferConsumeQueue.getSize()
+DefaultMessageStore->DefaultMessageStore:checkInDiskByCommitOffset判断是否拉磁盘数据
+DefaultMessageStore->DefaultMessageStore:isTheBatchFull此批消息达到上限了
+DefaultMessageStore->DefaultMessageFilter:isMessageMatched 匹配tagscode
+DefaultMessageStore<-DefaultMessageFilter:return true
+DefaultMessageStore->CommitLog:getMessage(offsetPy, sizePy)读取消息
+DefaultMessageStore<-CommitLog:返回结果selectResult
+DefaultMessageStore->DefaultMessageStore:getResult.addMessage(selectResult)
+end
+DefaultMessageStore->PullMessageProcessor:返回GetMessageResult
+PullMessageProcessor->NettyRemotingServer:writeAndFlush ManyMessageTransfer
+@enduml
