@@ -2,25 +2,32 @@
 
 title 时序图
 
-== 鉴权阶段 ==
+== 充值 ==
 
-Alice -> Bob: 请求
-Bob -> Alice: 应答
+client -> server:充值
 
-== 数据上传 ==
+server -> server:1验证签名\n2防重判断\n3开启事务\n4更新余额\n5插入明细\n6提交事务
 
-Alice -> Bob: 上传数据
-note left: 这是显示在左边的备注
+client <- server:返回结果
+== 消费 ==
+client -> server:消费
 
-Bob --> Canny: 转交数据
-... 不超过 5 秒钟 ...
-Canny --> Bob: 状态返回
-note right: 这是显示在右边的备注
+server -> server:1验证签名\n2防重判断\n3开启事务\n4更新余额\n5插入明细\n6提交事务
 
-Bob -> Alice: 状态返回
+client <- server:返回结果
 
-== 状态显示 ==
+==查询余额==
+client -> server:按照uid来查询余额
+server->server:
+client <- server:返回结果
 
-Alice -> Alice: 给自己发消息
-
+==查询余额明细==
+client -> server:按照uid来查询余额明细
+server->server:
+client <- server:返回结果
+== 内部对账 ==
+server->server:每日定时任务，对昨日余额 和明细\n有问题，邮件告警，无问题插入余额明细下载表
+== 对账下载 ==
+client->server:下载对账文件
+client<-server:返回文件信息
 @enduml

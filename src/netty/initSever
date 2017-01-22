@@ -1,0 +1,15 @@
+@startuml
+
+title init
+ServerBootstrap->ServerBootstrap:init
+ServerBootstrap->Channel:config().setOptions(options);\n设置channelOption配置信息
+ServerBootstrap<-Channel
+ServerBootstrap->Channel:channel.attr(key).set(e.getValue());
+ServerBootstrap<-Channel
+ServerBootstrap->ChannelPipeline:channel.pipeline();
+ServerBootstrap<-ChannelPipeline:返回ChannelPipeline
+ServerBootstrap->ChannelPipeline:p.addLast(handler())
+ServerBootstrap<-ChannelPipeline:
+ServerBootstrap->ChannelPipeline:p.addLast(handler())\nChannelInitializer\nServerBootstrapAcceptor
+ServerBootstrap<-ChannelPipeline:
+@enduml

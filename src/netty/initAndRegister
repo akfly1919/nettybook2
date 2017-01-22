@@ -1,0 +1,10 @@
+@startuml
+
+title initAndRegister
+AbstractBootstrap->AbstractBootstrap:initAndRegister
+AbstractBootstrap->ChannelFactory:newChannel
+AbstractBootstrap<-ChannelFactory:反射得到channel
+AbstractBootstrap->AbstractBootstrap:定义模板init方法\n子类实现略有不同,把配置信息设置到channel上
+AbstractBootstrap->EventLoopGroup:register(channel)
+AbstractBootstrap<-EventLoopGroup:返回ChannelFuture
+@enduml
